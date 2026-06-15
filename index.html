@@ -1,10 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador Sintático LL(1)</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<div class="header">
+    <h1>Analisador Sintático LL(1)</h1>
+    <p>Top-Down Preditivo Tabular</p>
+</div>
+
+<div class="card" id="grammarCard">
+    <div class="card-titulo">Definições da Gramática</div>
+    <div class="grade-info">
+
+        <div class="bloco-info gramatica">
+            <h3>Gramática</h3>
+            <div class="linha-regra"><span class="nao-terminal">S</span> <span class="seta">→</span> <span class="simbolo">a</span><span class="nao-terminal">A</span> <span class="seta">|</span> <span class="simbolo">b</span><span class="nao-terminal">B</span></div>
+            <div class="linha-regra"><span class="nao-terminal">A</span> <span class="seta">→</span> <span class="simbolo">c</span><span class="nao-terminal">C</span> <span class="seta">|</span> <span class="simbolo">d</span><span class="nao-terminal">D</span> <span class="seta">|</span> <span class="simbolo">b</span><span class="nao-terminal">A</span></div>
+            <div class="linha-regra"><span class="nao-terminal">B</span> <span class="seta">→</span> <span class="simbolo">c</span><span class="nao-terminal">S</span> <span class="seta">|</span> <span class="simbolo">d</span><span class="nao-terminal">D</span><span class="nao-terminal">A</span></div>
+            <div class="linha-regra"><span class="nao-terminal">C</span> <span class="seta">→</span> <span class="simbolo">a</span><span class="nao-terminal">S</span> <span class="seta">|</span> <span class="epsilon">ε</span></div>
+            <div class="linha-regra"><span class="nao-terminal">D</span> <span class="seta">→</span> <span class="simbolo">c</span><span class="nao-terminal">C</span><span class="simbolo">b</span></div>
+        </div>
+
+        <div class="bloco-info primeiro">
+            <h3>FIRST</h3>
+            <div class="linha-conjunto"><span class="nao-terminal">S</span> <span class="nome-conjunto">= {</span> <span class="token">a</span>, <span class="token">b</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">A</span> <span class="nome-conjunto">= {</span> <span class="token">c</span>, <span class="token">d</span>, <span class="token">b</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">B</span> <span class="nome-conjunto">= {</span> <span class="token">c</span>, <span class="token">d</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">C</span> <span class="nome-conjunto">= {</span> <span class="token">a</span>, <span class="token-epsilon">ε</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">D</span> <span class="nome-conjunto">= {</span> <span class="token">c</span> <span class="nome-conjunto">}</span></div>
+        </div>
+
+        <div class="bloco-info seguinte">
+            <h3>FOLLOW</h3>
+            <div class="linha-conjunto"><span class="nao-terminal">S</span> <span class="nome-conjunto">= {</span> <span class="token-fim">$</span>, <span class="token">b</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">A</span> <span class="nome-conjunto">= {</span> <span class="token-fim">$</span>, <span class="token">b</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">B</span> <span class="nome-conjunto">= {</span> <span class="token-fim">$</span>, <span class="token">b</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">C</span> <span class="nome-conjunto">= {</span> <span class="token-fim">$</span>, <span class="token">b</span> <span class="nome-conjunto">}</span></div>
+            <div class="linha-conjunto"><span class="nao-terminal">D</span> <span class="nome-conjunto">= {</span> <span class="token-fim">$</span>, <span class="token">b</span>, <span class="token">c</span>, <span class="token">d</span> <span class="nome-conjunto">}</span></div>
+        </div>
+
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-titulo">Tabela de Parsing</div>
+    <div class="envoltorio-tabela">
+        <table>
+            <thead>
+            <tr>
+                <th>NT/T</th>
+                <th style="text-transform:lowercase">a</th>
+                <th style="text-transform:lowercase">b</th>
+                <th style="text-transform:lowercase">c</th>
+                <th style="text-transform:lowercase">d</th>
+                <th>$</th>
+            </tr>
+            </thead>
+            <tbody id="parseTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-titulo">Sentença</div>
+    <div class="linha-entrada">
+        <input class="campo-sentenca" id="inp" type="text" placeholder="Ex: acabc" />
+        <button class="botao botao-roxo"        onclick="gerarAleatoria()">Gerar Aleatória</button>
+        <button class="botao botao-verde-agua"  onclick="gerarValida()">Gerar Válida</button>
+        <button class="botao botao-ambar"       onclick="analisar()">Analisar</button>
+        <button class="botao botao-azul"        onclick="proximoPasso()">Próximo Passo</button>
+        <button class="botao botao-vermelho"    onclick="limpar()">Limpar</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-titulo">Reconhecimento <span class="etiqueta" id="stepBadge">0 passos</span></div>
+
+    <div id="statusBanner" class="banner-status">
+        <span class="icone-status" id="statusIcon"></span>
+        <span id="statusMsg"></span>
+    </div>
+
+    <div class="controles-passo" id="stepControls" style="display:none">
+        <button class="botao botao-azul"  onclick="proximoPasso()">Próximo passo</button>
+        <button class="botao botao-verde" onclick="executarTudo()">Executar tudo</button>
+        <span class="texto-passo" id="stepLabel"></span>
+    </div>
+
+    <div class="envoltorio-tabela">
+        <table id="tabela-reconhecimento">
+            <thead>
+            <tr>
+                <th>Iteração</th>
+                <th>Pilha</th>
+                <th>Entrada restante</th>
+                <th>Ação</th>
+            </tr>
+            </thead>
+            <tbody id="recogBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>© URI 2026 — Analisador Sintático · Produzido por Caroline Deon e Suzana Deliberal</p>
+</footer>
+
+<script src="js/app.js"></script>
 </body>
 </html>
